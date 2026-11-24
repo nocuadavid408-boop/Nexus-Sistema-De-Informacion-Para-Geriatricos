@@ -36,22 +36,45 @@ def eliminar_archivo(ruta):
         pass
 
 
-def obtener_datos_residentes(conn, cursor, actividades):
+def obtener_datos_residentes(conn, cursor, actividades, nombre_cuidador, permitidos=None):
     """
-    Obtiene los datos de los residentes relacionados con las
-    actividades del cuidador, incluidos sus medicamentos.
+    Obtiene los datos de los residentes del cuidador: los de sus
+    actividades, los que tiene asignados y los de sus medicamentos
+    programados, junto con sus actividades y medicamentos.
     """
-    nombres_residentes = sorted({
+    cursor.execute(
+        """
+        SELECT r.nombre
+        FROM asignaciones ag
+        JOIN personal p   ON p.id = ag.personal_id
+        JOIN residentes r ON r.id = ag.residente_id
+        WHERE LOWER(TRIM(p.nombre)) = LOWER(TRIM(%s))
+        UNION
+        SELECT r.nombre
+        FROM itinerario_diario i
+        JOIN personal p   ON p.id = i.personal_id
+        JOIN residentes r ON r.id = i.residente_id
+        WHERE i.tipo = 'medicamento'
+          AND LOWER(TRIM(p.nombre)) = LOWER(TRIM(%s))
+        """,
+        (nombre_cuidador, nombre_cuidador),
+    )
+
+    nombres_residentes = {
         actividad["residente"]
         for actividad in actividades
         if actividad["residente"]
-    })
+    }
+    nombres_residentes.update(fila["nombre"] for fila in cursor.fetchall())
+
+    if permitidos is not None:
+        nombres_residentes &= set(permitidos)
+
+    nombres_residentes = sorted(nombres_residentes)
 
     if not nombres_residentes:
         return []
 
-    # Los marcadores se generan según la cantidad de nombres.
-    # Los valores siguen enviándose como parámetros SQL.
     placeholders = ", ".join(
         ["%s"] * len(nombres_residentes)
     )
@@ -266,6 +289,8 @@ async def generar_pdf_cuidador(
                 conn,
                 cursor,
                 actividades,
+                nombre_cuidador,
+                permitidos,
             )
 
         datos = {
@@ -353,6 +378,7 @@ async def generar_pdf_cuidador_admin(
                 conn,
                 cursor,
                 actividades,
+                nombre_cuidador,
             )
 
         datos = {
