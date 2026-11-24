@@ -1,13 +1,12 @@
 """
-Configuración central del proyecto: rutas base, ubicación de la base de
-datos, directorios de estáticos/plantillas y parámetros generales.
+Configuración central del proyecto: rutas base, directorios de
+estáticos/plantillas y parámetros generales.
 """
 
 import os
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-DATABASE = os.path.join(BASE_DIR, "nexus.db")
 STATIC_DIR = os.path.join(BASE_DIR, "static")
 TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
 

@@ -4,9 +4,6 @@ Esquema de la base de datos MySQL/MariaDB (nexus_proyecto).
 - init_db(): ejecuta database/nexus_v3.sql (crea la base y las tablas si no
   existen, y carga categorías, catálogos y usuarios de prueba). A mano:
       python -m database.schema
-  ⚠️ Ese script elimina las tablas VIEJAS (actividades antigua,
-  medicamentos_residente, medicamento_horas, catalogo_medicamentos,
-  agenda_eventos). Haz respaldo si tienes datos que conservar.
 - sincronizar_personal(): se ejecuta al arrancar la app; asegura que toda
   cuenta de Cuidador tenga su registro de personal activo.
 """
